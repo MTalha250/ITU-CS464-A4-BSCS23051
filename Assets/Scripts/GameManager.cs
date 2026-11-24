@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour
 {
@@ -116,6 +117,7 @@ public class GameManager : MonoBehaviour
     {
         panel.SetActive(true);
         Time.timeScale = 0f;
+        EventSystem.current.SetSelectedGameObject(first);   // keyboard-ready as it opens
     }
 
     // the end screens' buttons, all through the one LevelLoader
