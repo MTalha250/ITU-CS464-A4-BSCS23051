@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 8149142231851416534}
   - component: {fileID: 2326523729602267545}
   - component: {fileID: 5285587955915819806}
+  - component: {fileID: 8779935034572621965}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -211,3 +212,17 @@ MonoBehaviour:
   max: 3
   iFrames: 1
   body: {fileID: 1447418314289407630}
+--- !u!114 &8779935034572621965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8128825685903632645}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ac6ae8a7eff4990890265d6f3462da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HurtSound
+  health: {fileID: 5285587955915819806}
+  clip: {fileID: 8300000, guid: 790dfd8b19cdb4273a02bf4e55900727, type: 3}

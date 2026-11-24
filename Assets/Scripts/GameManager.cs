@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] LevelLoader loader;
     [SerializeField] TMP_Text titleText, scoreText, livesText, boostText, messageText, winTitle, winTime;
     [SerializeField] GameObject messagePanel, boostPanel, winPanel, losePanel, winFirst, loseFirst;
+    [SerializeField] AudioClip winSound, loseSound;
 
     int score, shownBoost = -1;
     float messageUntil;
@@ -104,12 +105,14 @@ public class GameManager : MonoBehaviour
     {
         winTitle.text = level == 5 ? "You beat all five levels!" : $"Level {level} complete!";
         winTime.text = best ? $"New best time: {time:0.0} s" : $"Time: {time:0.0} s    Best: {SaveData.BestTime(level):0.0} s";
+        SfxPlayer.Instance.Play(winSound);
         Open(winPanel, winFirst);
     }
 
     void Lose()
     {
         over = true;
+        SfxPlayer.Instance.Play(loseSound);
         Open(losePanel, loseFirst);
     }
 
