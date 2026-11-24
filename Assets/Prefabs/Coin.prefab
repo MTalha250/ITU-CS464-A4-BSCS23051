@@ -69,6 +69,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Coin
   value: 1
   spinSpeed: 90
+  chime: {fileID: 8300000, guid: 09cef15d8812143b78ec46ee35628b82, type: 3}
+  sparkle: {fileID: 5959950825773283601, guid: d255ab1653d0d48468ab12c67d42044b, type: 3}
 --- !u!1 &3961530799652961578
 GameObject:
   m_ObjectHideFlags: 0

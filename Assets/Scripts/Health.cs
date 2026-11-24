@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Health : MonoBehaviour
@@ -8,6 +9,7 @@ public class Health : MonoBehaviour
     int current;
     float invulnerableUntil;
 
+    public event Action<int, int> Damaged, Healed;   // (current, max)
     public int Current => current;
     public int Max => max;
 
@@ -25,7 +27,8 @@ public class Health : MonoBehaviour
         if (current <= 0 || Time.time < invulnerableUntil) return false;
         invulnerableUntil = Time.time + iFrames;
         current -= amount;
-        GameManager.Instance.UpdateHealth();
+        Damaged?.Invoke(current, max);                 // the bar, the hit sound and the sparks listen
+        GameEvents.RaisePlayerDamaged(current, max);   // the HUD's red flash listens
         if (current <= 0) GameManager.Instance.PlayerDied();   // <= 0: a crusher's 2 can skip past 0
         return true;
     }
@@ -34,6 +37,6 @@ public class Health : MonoBehaviour
     {
         current = max;
         invulnerableUntil = Time.time + protection;
-        GameManager.Instance.UpdateHealth();
+        Healed?.Invoke(current, max);
     }
 }

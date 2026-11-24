@@ -1,7 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,13 +12,17 @@ public class GameManager : MonoBehaviour
     [SerializeField] string title = "Level01", tip = "";
     [SerializeField] Health player;
     [SerializeField] Transform respawnPoint;
-    [SerializeField] TMP_Text titleText, scoreText, heartsText, livesText, boostText, messageText, winText;
-    [SerializeField] GameObject winPanel, losePanel, nextButton;
+    [SerializeField] LevelLoader loader;
+    [SerializeField] TMP_Text titleText, scoreText, livesText, boostText, messageText, winTitle, winTime;
+    [SerializeField] GameObject messagePanel, boostPanel, winPanel, losePanel, winFirst, loseFirst;
+    [SerializeField] AudioClip winSound, loseSound;
 
     int score, shownBoost = -1;
     float messageUntil;
     bool over, respawning;
     PlayerController controller;
+
+    public bool Over => over;
 
     void Awake() => Instance = this;
 
@@ -27,17 +31,18 @@ public class GameManager : MonoBehaviour
         controller = player.GetComponent<PlayerController>();
         titleText.text = title;
         UpdateScore();
-        UpdateHealth();
+        UpdateLives();
         Show(tip, 6f);
     }
 
     void Update()
     {
-        if (messageText.text != "" && Time.time >= messageUntil) messageText.text = "";
+        if (messagePanel.activeSelf && Time.time >= messageUntil) messagePanel.SetActive(false);
         int boost = Mathf.CeilToInt(controller.BoostLeft);   // only touch the text when it changes
         if (boost == shownBoost) return;
         shownBoost = boost;
-        boostText.text = boost > 0 ? $"Speed boost: {boost} s" : "";
+        boostPanel.SetActive(boost > 0);
+        boostText.text = $"Speed boost: {boost} s";
     }
 
     public void AddScore(int amount)
@@ -47,12 +52,7 @@ public class GameManager : MonoBehaviour
     }
 
     void UpdateScore() => scoreText.text = $"Coins: {score} / {targetScore}";
-
-    public void UpdateHealth()
-    {
-        heartsText.text = $"Hearts: {Mathf.Max(player.Current, 0)} / {player.Max}";
-        livesText.text = $"Lives: {lives}";
-    }
+    void UpdateLives() => livesText.text = $"Lives: {lives}";
 
     public void ReachGoal()
     {
@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
     {
         if (over || respawning) return;   // a fall during the respawn beat doesn't cost a second life
         lives--;
-        UpdateHealth();
+        UpdateLives();
         if (lives <= 0) Lose();
         else StartCoroutine(Respawn());
     }
@@ -77,43 +77,54 @@ public class GameManager : MonoBehaviour
         body.position = respawnPoint.position;
         player.transform.position = respawnPoint.position;
         body.linearVelocity = Vector3.zero;                // back standing still
-        player.Restore(spawnProtection);                   // full hearts and a moment of protection
+        player.Restore(spawnProtection);                   // full health and a moment of protection
         respawning = false;
     }
 
     void Show(string text, float seconds)
     {
+        if (text == "") return;
         messageText.text = text;
+        messagePanel.SetActive(true);
         messageUntil = Time.time + seconds;
     }
 
+    // Lecture 10's win, with a win screen before the next level
     void Win()
     {
         if (over) return;
         over = true;
-        bool last = SceneManager.GetActiveScene().buildIndex == SceneManager.sceneCountInBuildSettings - 1;
-        winText.text = last ? "You beat all five levels!" : "Level complete!";
-        nextButton.SetActive(!last);
-        winPanel.SetActive(true);
-        Time.timeScale = 0f;
+        int level = gameObject.scene.buildIndex;
+        float time = Time.timeSinceLevelLoad;
+        bool best = SaveData.Record(level, time);
+        SaveData.Unlock(level + 1);
+        ShowWinScreen(level, time, best);
+    }
+
+    void ShowWinScreen(int level, float time, bool best)
+    {
+        winTitle.text = level == 5 ? "You beat all five levels!" : $"Level {level} complete!";
+        winTime.text = best ? $"New best time: {time:0.0} s" : $"Time: {time:0.0} s    Best: {SaveData.BestTime(level):0.0} s";
+        SfxPlayer.Instance.Play(winSound);
+        Open(winPanel, winFirst);
     }
 
     void Lose()
     {
         over = true;
-        losePanel.SetActive(true);
+        SfxPlayer.Instance.Play(loseSound);
+        Open(losePanel, loseFirst);
+    }
+
+    void Open(GameObject panel, GameObject first)
+    {
+        panel.SetActive(true);
         Time.timeScale = 0f;
+        EventSystem.current.SetSelectedGameObject(first);   // keyboard-ready as it opens
     }
 
-    public void Restart()
-    {
-        Time.timeScale = 1f;                               // first: it survives the scene load
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    public void NextLevel()
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-    }
+    // the end screens' buttons, all through the one LevelLoader
+    public void NextLevel() => loader.LoadNext();
+    public void Restart() => loader.Reload();
+    public void MainMenu() => loader.LoadMenu();
 }

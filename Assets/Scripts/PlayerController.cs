@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (PauseMenu.IsPaused) return;            // Update still runs at timeScale 0: ignore input while paused
         // move, relative to the camera, flat on the ground
         Vector2 input = moveAction.ReadValue<Vector2>();
         Vector3 forward = cam.forward;
