@@ -28,6 +28,7 @@ public class Health : MonoBehaviour
         invulnerableUntil = Time.time + iFrames;
         current -= amount;
         Damaged?.Invoke(current, max);                 // the bar, the hit sound and the sparks listen
+        GameEvents.RaisePlayerDamaged(current, max);   // the HUD's red flash listens
         if (current <= 0) GameManager.Instance.PlayerDied();   // <= 0: a crusher's 2 can skip past 0
         return true;
     }
