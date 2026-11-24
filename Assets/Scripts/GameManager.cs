@@ -91,7 +91,12 @@ public class GameManager : MonoBehaviour
     {
         if (over) return;
         over = true;
-        winText.text = gameObject.scene.buildIndex == 5 ? "You beat all five levels!" : "Level complete!";
+        int level = gameObject.scene.buildIndex;
+        float time = Time.timeSinceLevelLoad;
+        bool best = SaveData.Record(level, time);
+        SaveData.Unlock(level + 1);
+        winText.text = (level == 5 ? "You beat all five levels!" : "Level complete!")
+                     + (best ? $"\nNew best time: {time:0.0} s" : $"\nTime: {time:0.0} s, best {SaveData.BestTime(level):0.0} s");
         winPanel.SetActive(true);
         Time.timeScale = 0f;
     }
