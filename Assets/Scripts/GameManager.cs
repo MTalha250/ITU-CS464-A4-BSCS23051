@@ -1,7 +1,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +11,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] string title = "Level01", tip = "";
     [SerializeField] Health player;
     [SerializeField] Transform respawnPoint;
+    [SerializeField] LevelLoader loader;
     [SerializeField] TMP_Text titleText, scoreText, heartsText, livesText, boostText, messageText, winText;
     [SerializeField] GameObject winPanel, losePanel, nextButton;
 
@@ -91,9 +91,7 @@ public class GameManager : MonoBehaviour
     {
         if (over) return;
         over = true;
-        bool last = SceneManager.GetActiveScene().buildIndex == SceneManager.sceneCountInBuildSettings - 1;
-        winText.text = last ? "You beat all five levels!" : "Level complete!";
-        nextButton.SetActive(!last);
+        winText.text = gameObject.scene.buildIndex == 5 ? "You beat all five levels!" : "Level complete!";
         winPanel.SetActive(true);
         Time.timeScale = 0f;
     }
@@ -105,15 +103,8 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 0f;
     }
 
-    public void Restart()
-    {
-        Time.timeScale = 1f;                               // first: it survives the scene load
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    public void NextLevel()
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-    }
+    // every scene change goes through the one LevelLoader
+    public void NextLevel() => loader.LoadNext();
+    public void Restart() => loader.Reload();
+    public void MainMenu() => loader.LoadMenu();
 }
